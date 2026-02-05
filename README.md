@@ -1,5 +1,8 @@
 # Audio2Sub
 
+[![PyPI](https://img.shields.io/pypi/v/audio2sub.svg)](https://pypi.org/project/audio2sub/)
+[![CI](https://github.com/Xavier-Lam/audio2sub/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Xavier-Lam/audio2sub/actions/workflows/ci.yml)
+
 **Audio2Sub** is a command-line tool that automatically transcribes audio from video or audio files and generates subtitles in the `.srt` format. It uses FFmpeg for media handling, [Silero VAD](https://github.com/snakers4/silero-vad) for precise voice activity detection, and supports multiple transcription backends to convert speech to text.
 
 ## Installation
