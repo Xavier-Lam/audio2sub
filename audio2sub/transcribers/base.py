@@ -78,7 +78,7 @@ class AIAPITranscriber(Base, ABC):
     )
 
     default_model: str = ""
-    default_chunk: int = 20
+    default_chunk: int = 40
 
     api_key_env_var: Optional[str] = None
 

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import argparse
 import inspect
+import os
 from pathlib import Path
-import warnings
 from typing import Dict, Type
+import warnings
 
 import torch
 from tqdm.auto import tqdm
@@ -22,7 +23,7 @@ def _available_transcribers() -> Dict[str, Type[Base]]:
 
 
 def _build_backend_parser(choices: list[str]) -> argparse.ArgumentParser:
-    default = "faster_whisper"
+    default = os.environ.get("DEFAULT_TRANSCRIBER", "faster_whisper")
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "-t",
@@ -120,20 +121,21 @@ def main() -> int:
     transcriber = transcriber_cls.from_cli_args(args)
     batch_opts = transcriber_cls.opts_from_cli(args)
 
-    segments = transcribe(
-        input_media,
-        transcriber,
-        lang=args.lang,
-        reporter=reporter,
-        stats=stats,
-        opts=batch_opts,
-    )
-    segments_to_srt(segments).save(str(output_srt))
-
-    print("Stats:")
-    for k, v in stats.items():
-        print(f"  {k}: {v}")
-    print(f"SRT written to {output_srt}")
+    try:
+        segments = transcribe(
+            input_media,
+            transcriber,
+            lang=args.lang,
+            reporter=reporter,
+            stats=stats,
+            opts=batch_opts,
+        )
+        segments_to_srt(segments).save(str(output_srt))
+        print(f"SRT written to {output_srt}")
+    finally:
+        print("Stats:")
+        for k, v in stats.items():
+            print(f"  {k}: {v}")
     return 0
 
 

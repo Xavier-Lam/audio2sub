@@ -13,7 +13,7 @@ __all__ = ["__version__", "transcribe", "segments_to_srt", "Segment", "Usage"]
 __title__ = "audio2sub"
 __description__ = "Transcribe media files to SRT subtitles."
 __url__ = "https://github.com/Xavier-Lam/audio2sub"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Xavier-Lam"
 __author_email__ = "xavierlam7@hotmail.com"
 
@@ -65,7 +65,7 @@ def transcribe(
 
         vad = SileroVAD(sample_rate=16_000)
         _output("Running voice activity detection (VAD)...")
-        segments = vad.detect_segments(wav_path)
+        segments = vad.detect_segments(wav_path, reporter=reporter)
         if not segments:
             raise RuntimeError("No speech detected by Silero VAD")
         total_segments = len(segments)

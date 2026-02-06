@@ -35,7 +35,6 @@ setup(
         "pysrt>=1.1.2",
         "tqdm",
         "onnxruntime>=1.14,<2",
-        "numpy",
     ],
     extras_require={
         "faster_whisper": ["faster-whisper>=1.0.1"],

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import ffmpeg
 import numpy as np
 import torch
 
-from audio2sub import Segment
+from audio2sub import ReporterCallback, Segment
 
 
 class SileroVAD:
@@ -25,7 +26,11 @@ class SileroVAD:
         self.window_size_samples = window_size_samples
         self.sample_rate = sample_rate
 
-    def detect_segments(self, wav_path: str | Path) -> List[Segment]:
+    def detect_segments(
+        self,
+        wav_path: str | Path,
+        reporter: Optional[ReporterCallback] = None,
+    ) -> List[Segment]:
         try:
             model, utils = torch.hub.load(
                 repo_or_dir="snakers4/silero-vad",
@@ -63,6 +68,14 @@ class SileroVAD:
             threshold=self.threshold,
             min_silence_duration_ms=int(self.min_silence_duration * 1000),
             window_size_samples=self.window_size_samples,
+            progress_tracking_callback=lambda p: reporter
+            and reporter(
+                "progress",
+                name="VAD",
+                current=math.floor(min(100.0, p) * 100) / 100.0,
+                total=100.0,
+                unit="%",
+            ),
         )
 
         segments: List[Segment] = []
