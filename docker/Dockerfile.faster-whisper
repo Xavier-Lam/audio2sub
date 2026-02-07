@@ -1,0 +1,70 @@
+# Dockerfile for audio2sub with faster-whisper backend
+FROM python:3.13-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Install base dependencies manually for better layer caching
+RUN pip install --no-cache-dir \
+    ffmpeg-python>=0.2.0 \
+    pysrt>=1.1.2 \
+    tqdm \
+    'onnxruntime>=1.14,<2'
+
+# Install PyTorch
+RUN pip install --no-cache-dir \
+    torch>=2.1.0 \
+    torchaudio>=2.1.0
+
+# Pre-download Silero VAD model
+RUN python -c "import torch; torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad', force_reload=False, onnx=False, trust_repo=True)"
+
+RUN apt-get remove -y curl && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install audio2sub from PyPI
+ARG VERSION=latest
+RUN if [ "$VERSION" = "latest" ]; then \
+    pip install --no-cache-dir audio2sub[faster_whisper]; \
+    else \
+    pip install --no-cache-dir audio2sub[faster_whisper]==$VERSION; \
+    fi
+
+# Set default backend
+ENV DEFAULT_TRANSCRIBER=faster_whisper
+
+# Pre-download faster-whisper "turbo" model so it's cached in the image
+RUN python - <<'PY'
+try:
+    from faster_whisper import WhisperModel
+    print('Downloading faster-whisper model: openai/whisper-turbo')
+    # Instantiating the model will download and cache it. Use cpu to avoid
+    # requiring a GPU at build time.
+    WhisperModel('turbo', device='cpu')
+    print('Model download complete')
+except Exception as e:
+    # Fail the build so the issue is visible; leave the traceback for debugging
+    import traceback
+    traceback.print_exc()
+    raise
+PY
+
+# Create directory for media files
+RUN mkdir -p /media
+
+WORKDIR /media
+
+LABEL org.opencontainers.image.title="audio2sub (faster-whisper)"
+LABEL org.opencontainers.image.description="Audio2Sub with faster-whisper backend for fast speech-to-text transcription"
+LABEL org.opencontainers.image.url="https://github.com/Xavier-Lam/audio2sub"
+LABEL org.opencontainers.image.source="https://github.com/Xavier-Lam/audio2sub"
+LABEL org.opencontainers.image.documentation="https://hub.docker.com/repository/docker/xavierlam/audio2sub"
+
+ENTRYPOINT ["audio2sub"]
