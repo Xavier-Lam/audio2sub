@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/audio2sub.svg)](https://pypi.org/project/audio2sub/)
 [![CI](https://github.com/Xavier-Lam/audio2sub/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Xavier-Lam/audio2sub/actions/workflows/ci.yml)
-[![Docker](https://img.shields.io/docker/v/xavierlam/audio2sub?label=docker)](https://hub.docker.com/repository/docker/xavierlam/audio2sub)
+[![Docker](https://img.shields.io/docker/v/xavierlam/audio2sub/latest?label=docker)](https://hub.docker.com/r/xavierlam/audio2sub)
 
 **Audio2Sub** is a command-line tool that automatically transcribes audio from video or audio files and generates subtitles in the `.srt` format. It uses FFmpeg for media handling, [Silero VAD](https://github.com/snakers4/silero-vad) for precise voice activity detection, and supports multiple transcription backends to convert speech to text.
 
@@ -52,19 +52,16 @@ Audio2Sub provides official Docker images for easy deployment without managing d
 ### Quick Start
 
 ```bash
-# Using faster-whisper (default, recommended)
-docker run --rm -v "$(pwd):/media" xavierlam/audio2sub \
-  my_video.mp4 -o my_video.srt --lang en
-
-# With GPU support (significantly faster)
+# With GPU support (recommended)
 docker run --rm --gpus all -v "$(pwd):/media" xavierlam/audio2sub \
   my_video.mp4 -o my_video.srt --lang en
 
-# Using Gemini API
-docker run --rm -v "$(pwd):/media" -e GEMINI_API_KEY=your_key \
-  xavierlam/audio2sub:gemini \
+# Without GPU support, whisper backend
+docker run --rm -v "$(pwd):/media" xavierlam/audio2sub:whisper \
   my_video.mp4 -o my_video.srt --lang en
 ```
+
+Use `--gpus all` to enable GPU support, use different tags to select different backends.
 
 ### Available Images
 
