@@ -12,6 +12,7 @@ from tqdm.auto import tqdm
 
 from . import __version__, segments_to_srt, transcribe, transcribers
 from .transcribers import Base
+from .detectors import Silero
 
 
 def _available_transcribers() -> Dict[str, Type[Base]]:
@@ -72,6 +73,7 @@ def build_parser(
         version=f"%(prog)s {__version__}",
     )
 
+    Silero.contribute_to_cli(parser)
     available[backend_args.transcriber].contribute_to_cli(parser)
     return parser
 
@@ -117,6 +119,7 @@ def main() -> int:
                 bars.pop(name, None)
 
     stats = {}
+    detector = Silero.from_cli_args(args)
     transcriber_cls = available[backend]
     transcriber = transcriber_cls.from_cli_args(args)
     batch_opts = transcriber_cls.opts_from_cli(args)
@@ -124,11 +127,12 @@ def main() -> int:
     try:
         segments = transcribe(
             input_media,
+            detector,
             transcriber,
             lang=args.lang,
             reporter=reporter,
             stats=stats,
-            opts=batch_opts,
+            transcriber_opts=batch_opts,
         )
         segments_to_srt(segments).save(str(output_srt))
         print(f"SRT written to {output_srt}")

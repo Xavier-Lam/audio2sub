@@ -4,6 +4,7 @@ import os
 import pytest
 
 from audio2sub import transcribe, transcribers
+from audio2sub.detectors import Silero
 
 
 SAMPLE_AUDIO = Path(__file__).parent / "jfk.flac"
@@ -38,14 +39,17 @@ def _assert_segments_match(segments):
 
 def test_whisper_backend():
     segments = transcribe(
-        SAMPLE_AUDIO, transcribers.Whisper(model_name="tiny.en"), lang="en"
+        SAMPLE_AUDIO, Silero(), transcribers.Whisper(model_name="tiny.en"), lang="en"
     )
     _assert_segments_match(segments)
 
 
 def test_faster_whisper_backend():
     segments = transcribe(
-        SAMPLE_AUDIO, transcribers.FasterWhisper(model_name="tiny.en"), lang="en"
+        SAMPLE_AUDIO,
+        Silero(),
+        transcribers.FasterWhisper(model_name="tiny.en"),
+        lang="en",
     )
     _assert_segments_match(segments)
 
@@ -56,7 +60,9 @@ def test_faster_whisper_backend():
 )
 def test_gemini_backend():
     stats = {}
-    segments = transcribe(SAMPLE_AUDIO, transcribers.Gemini(), lang="en", stats=stats)
+    segments = transcribe(
+        SAMPLE_AUDIO, Silero(), transcribers.Gemini(), lang="en", stats=stats
+    )
     _assert_segments_match(segments)
     assert "tokens_in" in stats or "tokens_out" in stats
     assert stats.get("tokens_in", 0) > 0

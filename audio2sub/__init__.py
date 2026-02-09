@@ -9,11 +9,14 @@ from dataclasses import dataclass
 
 import pysrt
 
+from .audio import convert_media_to_wav, cut_wav_segment
+
+
 __all__ = ["__version__", "transcribe", "segments_to_srt", "Segment", "Usage"]
 __title__ = "audio2sub"
 __description__ = "Transcribe media files to SRT subtitles."
 __url__ = "https://github.com/Xavier-Lam/audio2sub"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "Xavier-Lam"
 __author_email__ = "xavierlam7@hotmail.com"
 
@@ -30,20 +33,20 @@ class Segment:
     audio: Optional[Path] = None
 
 
-from .audio import convert_media_to_wav, cut_wav_segment  # noqa: E402
-from .transcribers.base import Base, Usage  # noqa: E402
-from .vad import SileroVAD  # noqa: E402
+from .detectors.base import Base as DetectorBase  # noqa: E402
+from .transcribers.base import Base as TranscriberBase, Usage  # noqa: E402
 
 
 def transcribe(
     input_media: str | Path,
-    transcriber: Base,
+    detector: DetectorBase,
+    transcriber: TranscriberBase,
     lang: Optional[str] = None,
     reporter: Optional[ReporterCallback] = None,
     stats: Optional[Usage | dict] = None,
-    opts: Optional[dict] = None,
+    transcriber_opts: Optional[dict] = None,
 ) -> List[Segment]:
-    """Convert media to segments using Silero VAD and batch transcription."""
+    """Convert media to segments using VAD and batch transcription."""
 
     input_media = Path(input_media)
     if not input_media.exists():
@@ -63,11 +66,10 @@ def transcribe(
         _output("Converting audio...")
         convert_media_to_wav(input_media, wav_path)
 
-        vad = SileroVAD(sample_rate=16_000)
         _output("Running voice activity detection (VAD)...")
-        segments = vad.detect_segments(wav_path, reporter=reporter)
+        segments = detector.detect(wav_path, reporter=reporter)
         if not segments:
-            raise RuntimeError("No speech detected by Silero VAD")
+            raise RuntimeError("No speech detected by VAD")
         total_segments = len(segments)
         _output((f"Detected {total_segments} speech segment(s)."))
         _output("Cutting audio into clips...")
@@ -86,7 +88,7 @@ def transcribe(
         transcribed_segments: List[Segment] = []
         completed = 0
         for seg in transcriber.batch_transcribe(
-            segments, lang=lang, stats=stats, **(opts or {})
+            segments, lang=lang, stats=stats, **(transcriber_opts or {})
         ):
             if seg.text.strip():
                 transcribed_segments.append(seg)
