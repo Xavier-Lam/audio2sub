@@ -21,7 +21,7 @@ class AIBackendBase(ABC):
 
     name: str = "base"
     default_model: str = ""
-    default_chunk: int = 40
+    default_chunk: int = 2000
     api_key_env_var: Optional[str] = None
 
     def __init__(self, model="", api_key=None) -> None:

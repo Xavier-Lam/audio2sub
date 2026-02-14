@@ -16,7 +16,17 @@ jobs:
 
     strategy:
       matrix:
-        backend: [faster-whisper, whisper, gemini]
+        include:
+          - backend: faster-whisper
+            tool: audio2sub
+          - backend: whisper
+            tool: audio2sub
+          - backend: gemini
+            tool: audio2sub
+          - backend: subtranslator
+            tool: subtranslator
+          - backend: subaligner
+            tool: subaligner
 
     steps:
       - name: Checkout
@@ -51,13 +61,15 @@ jobs:
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/audio2sub:${{ matrix.backend }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/audio2sub:${{ matrix.backend }}-${{ steps.version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.tool }}:${{ matrix.backend }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.tool }}:${{ matrix.backend }}-${{ steps.version.outputs.version }}
             ${{ matrix.backend == 'faster-whisper' && format('{0}/audio2sub:latest', secrets.DOCKERHUB_USERNAME) || '' }}
             ${{ matrix.backend == 'faster-whisper' && format('{0}/audio2sub:{1}', secrets.DOCKERHUB_USERNAME, steps.version.outputs.version) || '' }}
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/audio2sub:${{ matrix.backend }}
+            ${{ matrix.backend == 'subtranslator' && format('{0}/subtranslator:latest,{0}/subtranslator:{1}', secrets.DOCKERHUB_USERNAME, steps.version.outputs.version) || '' }}
+            ${{ matrix.backend == 'subaligner' && format('{0}/subaligner:latest,{0}/subaligner:{1}', secrets.DOCKERHUB_USERNAME, steps.version.outputs.version) || '' }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.tool }}:${{ matrix.backend }}
           cache-to: type=inline
 
       - name: Test image
         run: |
-          docker run --rm ${{ secrets.DOCKERHUB_USERNAME }}/audio2sub:${{ matrix.backend }} --version
+          docker run --rm ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.tool }}:${{ matrix.backend }} --version

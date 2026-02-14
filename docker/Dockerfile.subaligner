@@ -1,0 +1,29 @@
+# Dockerfile for subaligner
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install audio2sub from PyPI with subaligner extras
+ARG VERSION=latest
+RUN if [ "$VERSION" = "latest" ]; then \
+    pip install --no-cache-dir audio2sub[subaligner]; \
+    else \
+    pip install --no-cache-dir audio2sub[subaligner]==$VERSION; \
+    fi
+
+# Set default aligner backend
+ENV DEFAULT_ALIGNER=gemini
+
+# Create directory for media files
+RUN mkdir -p /media
+
+WORKDIR /media
+
+LABEL org.opencontainers.image.title="subaligner"
+LABEL org.opencontainers.image.description="AI-powered subtitle alignment tool - synchronize and align SRT subtitle timing using Gemini, Grok, or OpenAI"
+LABEL org.opencontainers.image.url="https://github.com/Xavier-Lam/audio2sub"
+LABEL org.opencontainers.image.source="https://github.com/Xavier-Lam/audio2sub"
+LABEL org.opencontainers.image.documentation="https://hub.docker.com/repository/docker/xavierlam/audio2sub"
+
+ENTRYPOINT ["subaligner"]

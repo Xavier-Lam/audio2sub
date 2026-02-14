@@ -1,8 +1,10 @@
 # Audio2Sub Docker Images
 
-Audio2Sub automatically transcribes audio from video or audio files and generates subtitles. Official Docker images provide easy deployment with multiple transcription backends including faster-whisper, OpenAI Whisper, and Google Gemini.
+Audio2Sub is an all-in-one subtitle toolkit. Official Docker images provide easy deployment for all three tools: **audio2sub** (speech-to-text transcription), **subtranslator** (AI subtitle translation), and **subaligner** (AI subtitle timing synchronization).
 
 ## Quick Start
+
+### audio2sub — Transcribe Audio to Subtitles
 
 Significantly faster transcription with GPU:
 
@@ -30,16 +32,68 @@ docker run --rm -v "$(pwd):/media" \
   video.mp4 -o video.srt --lang en
 ```
 
+### subtranslator — Translate Subtitles
+
+```bash
+# Translate Chinese subtitles to English (Gemini, default)
+docker run --rm -v "$(pwd):/media" \
+  -e GEMINI_API_KEY=your_api_key_here \
+  xavierlam/subtranslator \
+  video_zh.srt -s zh -d en -o video_en.srt
+
+# Use Grok backend
+docker run --rm -v "$(pwd):/media" \
+  -e GROK_API_KEY=your_api_key_here \
+  xavierlam/subtranslator \
+  video_zh.srt -s zh -d en -o video_en.srt -t grok
+
+# Use OpenAI backend
+docker run --rm -v "$(pwd):/media" \
+  -e OPENAI_API_KEY=your_api_key_here \
+  xavierlam/subtranslator \
+  video_zh.srt -s zh -d en -o video_en.srt -t openai
+```
+
+### subaligner — Align Subtitle Timing
+
+```bash
+# Align Chinese subtitles using English reference timing
+docker run --rm -v "$(pwd):/media" \
+  -e GEMINI_API_KEY=your_api_key_here \
+  xavierlam/subaligner \
+  -i chinese.srt -r english_reference.srt -o output.srt --src-lang zh --ref-lang en
+
+# Use Grok backend
+docker run --rm -v "$(pwd):/media" \
+  -e GROK_API_KEY=your_api_key_here \
+  xavierlam/subaligner \
+  -i chinese.srt -r english_reference.srt -o output.srt -a grok
+```
+
 ## Available Images
 
-All images are available on Docker Hub: `xavierlam/audio2sub:<tag>`
+All images are available on Docker Hub.
+
+### audio2sub
 
 | Tag | Backend | Description |
 |-----|---------|-------------|
-| `latest` | faster-whisper | Fast CTranslate2-based Whisper (Recommended) |
-| `faster-whisper` | faster-whisper | Same as latest |
-| `whisper` | whisper | Original OpenAI Whisper |
-| `gemini` | gemini | Google Gemini API |
+| `xavierlam/audio2sub:latest` | faster-whisper | Fast CTranslate2-based Whisper (Recommended) |
+| `xavierlam/audio2sub:faster-whisper` | faster-whisper | Same as latest |
+| `xavierlam/audio2sub:whisper` | whisper | Original OpenAI Whisper |
+| `xavierlam/audio2sub:gemini` | gemini | Google Gemini API |
+
+### subtranslator
+
+| Tag | Description |
+|-----|-------------|
+| `xavierlam/subtranslator:latest` | AI subtitle translator with Gemini, Grok, and OpenAI support |
+
+### subaligner
+
+| Tag | Description |
+|-----|-------------|
+| `xavierlam/subaligner:latest` | AI subtitle aligner with Gemini, Grok, and OpenAI support |
 
 ## Troubleshooting
 

@@ -13,8 +13,39 @@ with open(os.path.join("audio2sub", "__init__.py"), "r") as f:
     lines = f.readlines()
     for line in lines:
         match = re.match(r"(__\w+?__)\s*=\s*(.+)$", line)
-        if match:
+        if match and match.group(1) != "__all__":
             package[match.group(1)] = eval(match.group(2))
+
+transcriber_requirements = {
+    "ffmpeg-python>=0.2.0",
+    "torch>=2.1.0",
+    "torchaudio>=2.1.0",
+    "onnxruntime>=1.14,<2",
+}
+
+gemini_requirements = {
+    "google-genai>=1.0.0",
+}
+
+openai_requirements = {
+    "openai>=1.0.0",
+}
+
+faster_whisper_requirements = {
+    "faster-whisper>=1.0.1",
+}
+
+whisper_requirements = {
+    "openai-whisper>=20231117",
+}
+
+all_requirements = (
+    transcriber_requirements
+    | gemini_requirements
+    | openai_requirements
+    | faster_whisper_requirements
+    | whisper_requirements
+)
 
 setup(
     name=package["__title__"],
@@ -29,32 +60,23 @@ setup(
     packages=find_packages(exclude=("tests", "docs")),
     python_requires=">=3.9",
     install_requires=[
-        "torch>=2.1.0",
-        "torchaudio>=2.1.0",
-        "ffmpeg-python>=0.2.0",
         "pysrt>=1.1.2",
         "tqdm",
-        "onnxruntime>=1.14,<2",
     ],
     extras_require={
-        "faster_whisper": ["faster-whisper>=1.0.1"],
-        "whisper": ["openai-whisper>=20231117"],
-        "gemini": ["google-genai>=1.0.0"],
-        "dev": [
-            "pytest>=7.4.0",
-            "openai-whisper>=20231117",
-            "faster-whisper>=1.0.1",
-            "google-genai>=1.0.0",
-        ],
-        "all": [
-            "openai-whisper>=20231117",
-            "faster-whisper>=1.0.1",
-            "google-genai>=1.0.0",
-        ],
+        "faster_whisper": transcriber_requirements | faster_whisper_requirements,
+        "whisper": transcriber_requirements | whisper_requirements,
+        "gemini": transcriber_requirements | gemini_requirements,
+        "subtranslator": gemini_requirements | openai_requirements,
+        "subaligner": gemini_requirements | openai_requirements,
+        "dev": all_requirements | {"pytest>=7.4.0"},
+        "all": all_requirements,
     },
     entry_points={
         "console_scripts": [
-            "audio2sub=audio2sub.cli:main",
+            "audio2sub=audio2sub.cli.audio2sub:main",
+            "subtranslator=audio2sub.cli.subtranslator:main",
+            "subaligner=audio2sub.cli.subaligner:main",
         ]
     },
     classifiers=[

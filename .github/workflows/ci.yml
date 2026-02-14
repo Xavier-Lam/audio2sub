@@ -35,5 +35,9 @@ jobs:
       - name: Run tests
         env:
           SKIP_GEMINI_TEST: ${{ vars.SKIP_GEMINI_TEST }}
+          SKIP_GROK_TEST: ${{ vars.SKIP_GROK_TEST }}
+          SKIP_OPENAI_TEST: ${{ vars.SKIP_OPENAI_TEST }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest

@@ -3,8 +3,9 @@ from difflib import SequenceMatcher
 import os
 import pytest
 
-from audio2sub import transcribe, transcribers
+from audio2sub import transcribers
 from audio2sub.detectors import Silero
+from audio2sub.transcribe import transcribe
 
 
 SAMPLE_AUDIO = Path(__file__).parent / "jfk.flac"

@@ -1,0 +1,29 @@
+# Dockerfile for subtranslator
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install audio2sub from PyPI with subtranslator extras
+ARG VERSION=latest
+RUN if [ "$VERSION" = "latest" ]; then \
+    pip install --no-cache-dir audio2sub[subtranslator]; \
+    else \
+    pip install --no-cache-dir audio2sub[subtranslator]==$VERSION; \
+    fi
+
+# Set default translator backend
+ENV DEFAULT_TRANSLATOR=gemini
+
+# Create directory for media files
+RUN mkdir -p /media
+
+WORKDIR /media
+
+LABEL org.opencontainers.image.title="subtranslator"
+LABEL org.opencontainers.image.description="AI-powered subtitle translator - translate SRT subtitle files between languages using Gemini, Grok, or OpenAI"
+LABEL org.opencontainers.image.url="https://github.com/Xavier-Lam/audio2sub"
+LABEL org.opencontainers.image.source="https://github.com/Xavier-Lam/audio2sub"
+LABEL org.opencontainers.image.documentation="https://hub.docker.com/repository/docker/xavierlam/audio2sub"
+
+ENTRYPOINT ["subtranslator"]
