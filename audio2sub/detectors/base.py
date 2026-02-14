@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional
 
-from audio2sub import ReporterCallback, Segment
+from audio2sub.common import ReporterCallback, Segment
 
 
 class Base(ABC):

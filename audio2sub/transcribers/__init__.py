@@ -1,13 +1,7 @@
-from .base import (
-    AIAPITranscriber,
-    Base,
-    MissingDependencyException,
-    Usage,
-)
+from .base import AIAPITranscriber, Base
 from .whisper import Whisper
 from .faster_whisper import FasterWhisper
 from .gemini import Gemini
-from audio2sub import Segment
 
 
 __all__ = [
@@ -16,7 +10,4 @@ __all__ = [
     "Whisper",
     "FasterWhisper",
     "Gemini",
-    "MissingDependencyException",
-    "Segment",
-    "Usage",
 ]

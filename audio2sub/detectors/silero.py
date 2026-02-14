@@ -9,7 +9,7 @@ import ffmpeg
 import numpy as np
 import torch
 
-from audio2sub import ReporterCallback, Segment
+from audio2sub.common import ReporterCallback, Segment
 
 from .base import Base
 
