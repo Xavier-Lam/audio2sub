@@ -15,5 +15,6 @@ class OpenAI(OpenAIMixin, AITranslator):
         client,
         input_data: List[dict],
         prompt: List[str],
+        retries: Optional[int] = None,
     ) -> Tuple[str, Optional[Usage]]:
-        return self._call_text(client, prompt, input_data)
+        return self._call_text(client, prompt, input_data, retries=retries)

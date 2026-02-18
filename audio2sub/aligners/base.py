@@ -68,6 +68,7 @@ class AIAligner(AIBackendBase, Base, ABC):
         stats: Optional[dict] = None,
         chunk: Optional[int] = None,
         prompt: Optional[str] = None,
+        retries: Optional[int] = None,
     ) -> List[Segment]:
         """Align segments to reference timing using AI API."""
         prompt_cfg = self._build_prompt(
@@ -95,7 +96,9 @@ class AIAligner(AIBackendBase, Base, ABC):
                 "segments": seg_data,
                 "reference": ref_data,
             }
-            raw_text, usage = self._request(client, input_data, prompt_cfg)
+            raw_text, usage = self._request(
+                client, input_data, prompt_cfg, retries=retries
+            )
             self._parse_response_text(raw_text, seg_batch)
             if usage:
                 usage_tracker.tokens_in += usage.tokens_in
@@ -110,6 +113,7 @@ class AIAligner(AIBackendBase, Base, ABC):
         client,
         input_data: dict,
         prompt: List[str],
+        retries: Optional[int] = None,
     ) -> Tuple[str, Optional[Usage]]:
         """Call the API and return (raw_text, Usage)."""
 

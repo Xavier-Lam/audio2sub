@@ -105,6 +105,7 @@ class AIAPITranscriber(AIBackendBase, Base, ABC):
         chunk: Optional[int] = None,
         outline: Optional[str] = None,
         prompt: Optional[str] = None,
+        retries: Optional[int] = None,
     ) -> Iterable[Segment]:
         """Transcribe segments with shared chunking, prompt, and stats."""
         chunk_size = chunk if chunk and chunk > 0 else self.default_chunk
@@ -113,7 +114,9 @@ class AIAPITranscriber(AIBackendBase, Base, ABC):
         usage_tracker = Usage()
 
         for batch in self._iter_chunks(segments, chunk_size):
-            raw_text, usage = self._request_transcription(client, batch, prompt_cfg)
+            raw_text, usage = self._request_transcription(
+                client, batch, prompt_cfg, retries=retries
+            )
             self._parse_response_text(raw_text, batch)
             if usage:
                 usage_tracker.tokens_in += usage.tokens_in
@@ -128,6 +131,7 @@ class AIAPITranscriber(AIBackendBase, Base, ABC):
         client,
         batch: List[Segment],
         prompt: List[str],
+        retries: Optional[int] = None,
     ) -> Tuple[str, Optional[Usage]]:
         """Call the provider and return (raw_text_response, Usage)."""
 

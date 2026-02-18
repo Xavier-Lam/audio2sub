@@ -60,6 +60,7 @@ class AITranslator(AIBackendBase, Base, ABC):
         stats: Optional[dict] = None,
         chunk: Optional[int] = None,
         prompt: Optional[str] = None,
+        retries: Optional[int] = None,
     ) -> List[Segment]:
         """Translate segments using AI API with chunking support."""
         chunk_size = chunk if chunk and chunk > 0 else self.default_chunk
@@ -72,7 +73,9 @@ class AITranslator(AIBackendBase, Base, ABC):
         result: List[Segment] = []
         for batch in self._iter_chunks(segments, chunk_size):
             input_data = [{"index": seg.index, "text": seg.text} for seg in batch]
-            raw_text, usage = self._request(client, input_data, prompt_cfg)
+            raw_text, usage = self._request(
+                client, input_data, prompt_cfg, retries=retries
+            )
             self._parse_response_text(raw_text, batch)
             if usage:
                 usage_tracker.tokens_in += usage.tokens_in
@@ -87,6 +90,7 @@ class AITranslator(AIBackendBase, Base, ABC):
         client,
         input_data: List[dict],
         prompt: List[str],
+        retries: Optional[int] = None,
     ) -> Tuple[str, Optional[Usage]]:
         """Call the API and return (raw_text, Usage)."""
 

@@ -15,5 +15,6 @@ class OpenAI(OpenAIMixin, AIAligner):
         client,
         input_data: dict,
         prompt: List[str],
+        retries: Optional[int] = None,
     ) -> Tuple[str, Optional[Usage]]:
-        return self._call_text(client, prompt, input_data)
+        return self._call_text(client, prompt, input_data, retries=retries)
